@@ -19,8 +19,8 @@ function reloadCss() {
 function createGrid(size) {
   let table = document.createElement("TABLE");
   for (let x = 0; x < size; x++) {
-    maxExpansion = screen.width < screen.height-200 ? screen.width : screen.height;
-    gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size;
+    maxExpansion = window.innerWidth < (window.innerHeight - 150) ? window.innerWidth : window.innerHeight - 150;
+    let gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size;
 
     let tr = document.createElement("TR");
     for (let y = 0; y < size; y++) {
@@ -60,12 +60,10 @@ function renderTable(grid) {
   let xCord = Math.floor(ind / action.size);
   let yCord = ind % action.size;
   console.log(action.getNewValueIndex());
-  for(let x = 0 ; x < grid.length ; x++)
-  {
-    for(let y = 0 ; y < grid.length ; y++)
-    {
+  for (let x = 0; x < grid.length; x++) {
+    for (let y = 0; y < grid.length; y++) {
       table.rows[x].cells[y].innerHTML = grid[x][y];
-      if(xCord == x && yCord == y)
+      if (xCord == x && yCord == y)
         table.rows[x].cells[y].classList.add("newCell");
       else
         table.rows[x].cells[y].classList.remove("newCell");
@@ -73,7 +71,7 @@ function renderTable(grid) {
   }
 }
 
-function renderAnimation(grids){
+function renderAnimation(grids) {
   grids.forEach(grid => {
     sleep(500);
     renderTable(grid);
@@ -91,7 +89,7 @@ function createTabs() {
     let button = document.createElement("BUTTON");
     button.id = x;
     button.class = "tablinks";
-    button.onclick = function(evt) {
+    button.onclick = function (evt) {
       let GameGrid = document.getElementById("GameGrid");
       if (GameGrid.hasChildNodes())
         GameGrid.removeChild(document.getElementById("grid"));
@@ -100,10 +98,10 @@ function createTabs() {
       action = new Action(
         evt.currentTarget.id,
         settings.gameSetting.winningValue,
-        function() {
+        function () {
           alert("You Won");
         },
-        function() {
+        function () {
           alert("You Lost");
         }
       );
@@ -115,20 +113,29 @@ function createTabs() {
   }
 }
 
-function keyTrigger(evt){
+function keyTrigger(evt) {
   let keyCode = evt.keyCode;
-  if(keyCode == 38)
+  if (keyCode == 38)
     renderAnimation(action.moveUp());
-  else if(keyCode == 40)
+  else if (keyCode == 40)
     renderAnimation(action.moveDown());
-  if(keyCode == 37)
+  else if (keyCode == 37)
     renderAnimation(action.moveLeft());
-  else if(keyCode == 39)
+  else if (keyCode == 39)
     renderAnimation(action.moveRight());
 }
 
+function touchAction(el, type) {
+  if (type == "u")
+    renderAnimation(action.moveUp());
+  else if (type == "d")
+    renderAnimation(action.moveDown());
+  else if (type == "l")
+    renderAnimation(action.moveLeft());
+  else if (type == "r")
+    renderAnimation(action.moveRight());
+}
 
-
-
+detectswipe(GameGrid,touchAction);
 createTables();
 createTabs();

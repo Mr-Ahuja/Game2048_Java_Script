@@ -41,7 +41,7 @@ class Logic {
     }
 
     getRandomNumber2and4() {
-        if (this.getRandomNumberInRange(1, 10) == 1) return 4;
+        if (this.getRandomNumberInRange(1, 100) == 1) return 4;
         return 2;
     }
 
