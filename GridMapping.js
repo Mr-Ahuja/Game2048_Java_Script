@@ -136,6 +136,6 @@ function touchAction(el, type) {
     renderAnimation(action.moveRight());
 }
 
-detectswipe(GameGrid,touchAction);
+detectswipe("GameGrid",touchAction);
 createTables();
 createTabs();
