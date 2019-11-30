@@ -19,7 +19,7 @@ function reloadCss() {
 function createGrid(size) {
   let table = document.createElement("TABLE");
   for (let x = 0; x < size; x++) {
-    maxExpansion = screen.width < screen.height ? screen.width : screen.height;
+    maxExpansion = screen.width < screen.height-200 ? screen.width : screen.height;
     gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size;
 
     let tr = document.createElement("TR");
