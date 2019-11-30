@@ -79,7 +79,10 @@ function renderTable(grid) {
   console.log(action.getNewValueIndex());
   for (let x = 0; x < grid.length; x++) {
     for (let y = 0; y < grid.length; y++) {
+if(grid[x][y] != 0)
       table.rows[x].cells[y].innerHTML = grid[x][y];
+else
+table.rows[x].cells[y].innerHTML = " ";
       if (xCord == x && yCord == y)
         table.rows[x].cells[y].classList.add("newCell");
       else
