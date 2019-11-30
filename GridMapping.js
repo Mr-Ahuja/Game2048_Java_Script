@@ -7,6 +7,21 @@ let settings = {
     winningValue: 2048
   }
 };
+function detectMobile() { 
+  if( navigator.userAgent.match(/Android/i)
+  || navigator.userAgent.match(/webOS/i)
+  || navigator.userAgent.match(/iPhone/i)
+  || navigator.userAgent.match(/iPad/i)
+  || navigator.userAgent.match(/iPod/i)
+  || navigator.userAgent.match(/BlackBerry/i)
+  || navigator.userAgent.match(/Windows Phone/i)
+  ){
+     return true;
+   }
+  else {
+     return false;
+   }
+ }
 
 function reloadCss() {
   var links = document.getElementsByTagName("link");
@@ -19,8 +34,10 @@ function reloadCss() {
 function createGrid(size) {
   let table = document.createElement("TABLE");
   for (let x = 0; x < size; x++) {
-    maxExpansion = window.innerWidth < (window.innerHeight - 150) ? window.innerWidth : window.innerHeight - 150;
+    maxExpansion = window.innerWidth < (window.innerHeight - 200) ? window.innerWidth : window.innerHeight - 200;
     let gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size;
+    if(detectMobile())
+      gridWidth = (window.innerWidth-50) / size;
 
     let tr = document.createElement("TR");
     for (let y = 0; y < size; y++) {
@@ -89,6 +106,9 @@ function createTabs() {
     let button = document.createElement("BUTTON");
     button.id = x;
     button.class = "tablinks";
+    if(detectMobile)
+      button.style.fontSize = 42;
+      
     button.onclick = function (evt) {
       let GameGrid = document.getElementById("GameGrid");
       if (GameGrid.hasChildNodes())

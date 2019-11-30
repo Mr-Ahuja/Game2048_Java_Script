@@ -38,17 +38,17 @@
 }
 
 .tablinks {
-  foreground-color:#000000;
+  foreground-color: #000000;
 }
 
 td {
-color: #fff;
-background-color: #000;
-font-size: 42;
-text-align:center;
-border: 2px solid #fff;
-border-radius: 50;
-font-weight: bold;
+  color: #fff;
+  background-color: #000;
+  font-size: 42;
+  text-align: center;
+  border: 2px solid #fff;
+  border-radius: 50;
+  font-weight: bold;
 }
 
 #GameGrid {
@@ -56,10 +56,15 @@ font-weight: bold;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 100%;
 }
 
 .newCell {
-  color: #0078D7;
+  color: #0078d7;
+}
+
+body {
+  background: black;
 }
 
 @keyframes fadeEffect {
