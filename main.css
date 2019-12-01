@@ -1,6 +1,9 @@
 #tab {
-  overflow: hidden;
   background-color: #000000;
+  border-bottom: 2px solid #fff;
+  position: absolute;
+  width: 70%;
+  align-self: center;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -43,8 +46,8 @@
 
 td {
   color: #fff;
-  background-color: #000;
-  font-size: 42;
+  background-color: rgba(0, 0, 0, 0.74);
+  font-size: 40;
   text-align: center;
   border: 2px solid #fff;
   border-radius: 50;

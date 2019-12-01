@@ -46,6 +46,9 @@ function createGrid(size) {
       td.appendChild(textNode);
       td.style.width = gridWidth;
       td.style.height = gridWidth;
+      td.style.fontSize = 30;
+      if(detectMobile())
+        td.style.fontSize = 70;
       tr.appendChild(td);
     }
     table.appendChild(tr);
@@ -109,7 +112,8 @@ function createTabs() {
     let button = document.createElement("BUTTON");
     button.id = x;
     button.class = "tablinks";
-    if(detectMobile)
+    button.style.fontSize = 30;
+    if(detectMobile())
       button.style.fontSize = 42;
       
     button.onclick = function (evt) {
