@@ -15,6 +15,8 @@
     *,*::before,*::after{ box-sizing: border-box; }
     :root { --vh: 1vh; }
     html, body { height:100%; margin:0; background: radial-gradient(1200px 800px at 70% 20%, #152030 0%, var(--bg, #0b0f14) 60%); color: var(--text,#e6eef8); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; overscroll-behavior: none; }
+    a { color:#fff; text-decoration:none; font-weight:600; }
+    a:hover { text-decoration:none; opacity:.9; }
 
     /* Background canvas */
     #constellation { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; z-index: 0; }
@@ -143,13 +145,34 @@
   let settings = { gridSettings: { maxGridCount: 8, minGridCount: 4 }, gameSetting: { winningValue: 2048 } };
   function detectMobile(){ return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i).test(navigator.userAgent); }
   function reloadCss(){ var links = document.getElementsByTagName("link"); for (var cl in links){ var link = links[cl]; if (link && link.rel === "stylesheet") link.href += ""; } }
+  function measureHeaderHeight(){
+    const card = document.querySelector('.card');
+    if (!card) return 200;
+    const parts = [
+      card.querySelector('.logo'),
+      card.querySelector('h1'),
+      card.querySelector('.lead'),
+      card.querySelector('.toolbar'),
+      document.getElementById('tab')
+    ];
+    let total = 0;
+    parts.forEach(el => {
+      if (el){
+        const cs = getComputedStyle(el);
+        total += el.offsetHeight + (parseFloat(cs.marginTop)||0) + (parseFloat(cs.marginBottom)||0);
+      }
+    });
+    const csCard = getComputedStyle(card);
+    total += (parseFloat(csCard.paddingTop)||0) + (parseFloat(csCard.paddingBottom)||0);
+    return Math.ceil(total) + 8; // small breathing room
+  }
+
   function createGrid(size){
     const spacing = 8; // match CSS border-spacing
     const maxCardW = Math.floor(Math.min(window.innerWidth * 0.92, 860));
     const availW = Math.max(220, maxCardW - 44); // subtract card horizontal padding (2 * 22px)
     const panelMaxH = Math.floor(window.innerHeight * 0.85);
-    const headerReserve = detectMobile() ? 180 : 200; // title + toolbar + tabs + paddings
-    const availH = Math.max(220, panelMaxH - headerReserve);
+    const availH = Math.max(220, panelMaxH - measureHeaderHeight());
     const cellW = Math.floor((availW - (size - 1) * spacing) / size);
     const cellH = Math.floor((availH - (size - 1) * spacing) / size);
     const cell = Math.max(32, Math.min(cellW, cellH));
