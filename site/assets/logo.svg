@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="t d">
+  <title id="t">Circle with Filled Ring and 4 Transparent Rounded Windows</title>
+  <desc id="d">Circle outline; inside is filled except four rounded, bordered windows. Square border thickness equals circle thickness.</desc>
+
+  <style>
+    :root {
+      --w: 14;
+      --r: 45;
+      --fill: #fff;
+      --stroke: #fff;
+    }
+  </style>
+
+  <defs>
+    <mask id="window-cutout">
+      <rect width="100%" height="100%" fill="#000"/>
+      <circle cx="128" cy="128" r="118" fill="#fff"/>
+      <g fill="#000">
+        <rect x="28"  y="28"  width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+        <rect x="128" y="28"  width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+        <rect x="28"  y="128" width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+        <rect x="128" y="128" width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+      </g>
+    </mask>
+    <clipPath id="circle-clip">
+      <circle cx="128" cy="128" r="118"/>
+    </clipPath>
+  </defs>
+
+  <rect width="100%" height="100%" fill="var(--fill)" mask="url(#window-cutout)"/>
+  <circle cx="128" cy="128" r="118" fill="none" stroke="var(--stroke)" stroke-width="var(--w)"/>
+  <g fill="none" stroke="var(--stroke)" stroke-width="var(--w)" clip-path="url(#circle-clip)">
+    <rect x="28"  y="28"  width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+    <rect x="128" y="28"  width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+    <rect x="28"  y="128" width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+    <rect x="128" y="128" width="100" height="100" rx="var(--r)" ry="var(--r)"/>
+  </g>
+</svg>
+

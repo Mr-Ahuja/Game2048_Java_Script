@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>2048 — The Chosen One</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,6 +25,7 @@
     .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(2px); padding: 22px; width: min(92vw, 860px); text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
     h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: .4px; }
     .lead { color: var(--muted,#95a3b8); margin: 0 0 18px; }
+    .logo { width: 56px; height: 56px; display:block; margin: 0 auto 6px; opacity:.95; }
 
     /* Capsule buttons (grid size tabs) */
     #tab { margin: 8px auto 18px; padding-bottom: 6px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; border-bottom: 1px solid #223042; }
@@ -37,7 +39,11 @@
     td { color: var(--text); background-color: rgba(10,14,20,0.45); font-size: 40px; text-align:center; border:1px solid #1f2a38; border-radius: 12px; font-weight:700; transition: transform .12s ease, background-color .12s ease, color .12s ease; }
     .newCell { color: var(--accent,#2e8cff); }
     .bump { animation: bump .14s ease; }
+    .merge { animation: merge .22s ease; }
+    .spawn { animation: spawn .20s ease; }
     @keyframes bump { 0%{ transform: scale(.92); } 100%{ transform: scale(1); } }
+    @keyframes merge { 0% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(46,140,255,.12); } 100% { transform: scale(1); box-shadow: none; } }
+    @keyframes spawn { 0% { transform: scale(.60); opacity:.6; } 100% { transform: scale(1); opacity:1; } }
 
     .toolbar { display:flex; justify-content:center; gap:10px; margin-bottom: 12px; }
     .btn { cursor:pointer; border:1px solid #1e2733; background:#0f151d; color:#f5f7fb; padding:10px 14px; border-radius:999px; font-size:15px; font-weight:500; transition: background-color .15s ease, border-color .15s ease, filter .15s ease; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
@@ -45,6 +51,8 @@
     .btn.primary { background: var(--accent); border-color: var(--accent); color:#fff; }
 
     .site-footer { position: fixed; left: 0; right: 0; bottom: 0; color: var(--muted); font-size: 12px; text-align: center; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+    .site-footer a { color:#fff; text-decoration:none; font-weight:600; }
+    .site-footer a:hover { text-decoration:none; opacity:.9; }
 
     @media (max-width: 600px){
       .card{ padding: 28px 18px; }
@@ -59,6 +67,7 @@
   <div class="page">
     <section class="hero">
       <div class="card">
+        <img class="logo" src="assets/logo.svg" alt="Logo" />
         <h1>2048</h1>
         <p class="lead">Classic 2048 puzzle — merge equal tiles to reach 2048. Use arrow keys on desktop or swipe on mobile.</p>
 
@@ -168,10 +177,15 @@
     for (let x = 0; x < grid.length; x++){
       for (let y = 0; y < grid.length; y++){
         const cell = table.rows[x].cells[y];
-        const prev = lastGrid ? lastGrid[x][y] : null;
+        const prev = (lastGrid && lastGrid[x]) ? lastGrid[x][y] : null;
         if(grid[x][y] != 0) cell.textContent = grid[x][y]; else cell.textContent = "";
         if (xCord == x && yCord == y) cell.classList.add("newCell"); else cell.classList.remove("newCell");
-        if (prev !== null && prev !== grid[x][y]){ cell.classList.remove('bump'); void cell.offsetWidth; cell.classList.add('bump'); }
+        if (prev !== null && prev !== grid[x][y]){
+          cell.classList.remove('bump','merge','spawn'); void cell.offsetWidth;
+          if (prev === 0 && grid[x][y] > 0) { cell.classList.add('spawn'); }
+          else if (prev > 0 && grid[x][y] > prev) { cell.classList.add('merge'); }
+          else { cell.classList.add('bump'); }
+        }
       }
     }
     lastGrid = grid.map(r => r.slice());
@@ -182,7 +196,7 @@
       await sleep(110);
     }
   }
-  let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = createGrid(parseInt(evt.currentTarget.id,10)); GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
+  let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = createGrid(parseInt(evt.currentTarget.id,10)); GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); lastGrid = null; renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
     button.appendChild(document.createTextNode(`${x}x${x}`)); parent.appendChild(button); } }
   function keyTrigger(evt){ let keyCode = evt.keyCode; if (keyCode == 38) renderAnimation(action.moveUp()); else if (keyCode == 40) renderAnimation(action.moveDown()); else if (keyCode == 37) renderAnimation(action.moveLeft()); else if (keyCode == 39) renderAnimation(action.moveRight()); }
   function touchAction(el, type){ if (type == "u") renderAnimation(action.moveUp()); else if (type == "d") renderAnimation(action.moveDown()); else if (type == "l") renderAnimation(action.moveLeft()); else if (type == "r") renderAnimation(action.moveRight()); }
