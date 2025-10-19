@@ -44,6 +44,8 @@
     .btn:hover { border-color:#2a3545; background:#131b26; text-decoration:none; }
     .btn.primary { background: var(--accent); border-color: var(--accent); color:#fff; }
 
+    .site-footer { position: fixed; left: 0; right: 0; bottom: 0; color: var(--muted); font-size: 12px; text-align: center; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+
     @media (max-width: 600px){
       .card{ padding: 28px 18px; }
       h1{ font-size: 28px; margin: 8px 0 10px; }
@@ -58,7 +60,7 @@
     <section class="hero">
       <div class="card">
         <h1>2048</h1>
-        <p class="lead">Dark-first, glassy aesthetic with capsule controls.</p>
+        <p class="lead">Classic 2048 puzzle — merge equal tiles to reach 2048. Use arrow keys on desktop or swipe on mobile.</p>
 
         <div class="toolbar">
           <button class="btn" onclick="location.reload()"><span class="material-icons-outlined">refresh</span><span>New Game</span></button>
@@ -133,19 +135,25 @@
   function detectMobile(){ return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i).test(navigator.userAgent); }
   function reloadCss(){ var links = document.getElementsByTagName("link"); for (var cl in links){ var link = links[cl]; if (link && link.rel === "stylesheet") link.href += ""; } }
   function createGrid(size){
+    const spacing = 8; // match CSS border-spacing
+    const maxCardW = Math.floor(Math.min(window.innerWidth * 0.92, 860));
+    const availW = Math.max(220, maxCardW - 32);
+    const availH = Math.max(220, Math.floor(window.innerHeight - (detectMobile()? 300 : 320)));
+    const cellW = Math.floor((availW - (size - 1) * spacing) / size);
+    const cellH = Math.floor((availH - (size - 1) * spacing) / size);
+    const cell = Math.max(32, Math.min(cellW, cellH));
+    const font = Math.max(14, Math.floor(cell * (detectMobile() ? 0.55 : 0.45)));
+
     let table = document.createElement("TABLE");
     table.id = "grid";
     for (let x = 0; x < size; x++){
-      const maxExpansion = Math.min(window.innerWidth, window.innerHeight - 200);
-      let cell = Math.min(100, Math.floor(maxExpansion / size));
-      if (detectMobile()) cell = Math.floor((window.innerWidth - 50) / size);
       let tr = document.createElement("TR");
       for (let y = 0; y < size; y++){
         let td = document.createElement("TD");
         td.appendChild(document.createTextNode("0"));
         td.style.width = cell + 'px';
         td.style.height = cell + 'px';
-        td.style.fontSize = (detectMobile() ? 22 : 18) + 'px';
+        td.style.fontSize = font + 'px';
         tr.appendChild(td);
       }
       table.appendChild(tr);
@@ -174,10 +182,23 @@
       await sleep(110);
     }
   }
-  let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = tableDic[evt.currentTarget.id]; GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
+  let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = createGrid(parseInt(evt.currentTarget.id,10)); GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
     button.appendChild(document.createTextNode(`${x}x${x}`)); parent.appendChild(button); } }
   function keyTrigger(evt){ let keyCode = evt.keyCode; if (keyCode == 38) renderAnimation(action.moveUp()); else if (keyCode == 40) renderAnimation(action.moveDown()); else if (keyCode == 37) renderAnimation(action.moveLeft()); else if (keyCode == 39) renderAnimation(action.moveRight()); }
   function touchAction(el, type){ if (type == "u") renderAnimation(action.moveUp()); else if (type == "d") renderAnimation(action.moveDown()); else if (type == "l") renderAnimation(action.moveLeft()); else if (type == "r") renderAnimation(action.moveRight()); }
+  function relayout(){
+    if (!action || !action.size) return;
+    const GameGrid = document.getElementById('GameGrid');
+    if (!GameGrid) return;
+    const existing = document.getElementById('grid');
+    if (existing) GameGrid.removeChild(existing);
+    table = createGrid(parseInt(action.size,10));
+    GameGrid.appendChild(table);
+    renderTable(action.grid);
+  }
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', relayout);
+
   detectswipe("GameGrid",touchAction); createTables(); createTabs();
   </script>
 </body>
