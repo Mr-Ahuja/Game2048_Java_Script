@@ -20,9 +20,9 @@
     #constellation { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; z-index: 0; }
 
     /* Layout + card */
-    .page { min-height: calc(var(--vh) * 100); display: flex; flex-direction: column; }
+    .page { min-height: calc(var(--vh) * 100); display: flex; flex-direction: column; padding-bottom: calc(34px + env(safe-area-inset-bottom)); }
     .hero { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-    .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(2px); padding: 22px; width: min(92vw, 860px); text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
+    .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(2px); padding: 22px; width: min(92vw, 860px); max-height: calc(var(--vh) * 70); overflow: hidden; text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
     h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: .4px; }
     .lead { color: var(--muted,#95a3b8); margin: 0 0 18px; }
     .logo { width: 56px; height: 56px; display:block; margin: 0 auto 6px; opacity:.95; }
@@ -147,7 +147,9 @@
     const spacing = 8; // match CSS border-spacing
     const maxCardW = Math.floor(Math.min(window.innerWidth * 0.92, 860));
     const availW = Math.max(220, maxCardW - 32);
-    const availH = Math.max(220, Math.floor(window.innerHeight - (detectMobile()? 300 : 320)));
+    const panelMaxH = Math.floor(window.innerHeight * 0.70);
+    const headerReserve = detectMobile() ? 180 : 200; // title + toolbar + tabs + paddings
+    const availH = Math.max(220, panelMaxH - headerReserve);
     const cellW = Math.floor((availW - (size - 1) * spacing) / size);
     const cellH = Math.floor((availH - (size - 1) * spacing) / size);
     const cell = Math.max(32, Math.min(cellW, cellH));
