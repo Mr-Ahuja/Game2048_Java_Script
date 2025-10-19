@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>2048 — The Chosen One</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="uiux/tokens.css">
+  <style>
+    *,*::before,*::after{ box-sizing: border-box; }
+    :root { --vh: 1vh; }
+    html, body { height:100%; margin:0; background: radial-gradient(1200px 800px at 70% 20%, #152030 0%, var(--bg, #0b0f14) 60%); color: var(--text,#e6eef8); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; overscroll-behavior: none; }
+
+    /* Background canvas */
+    #constellation { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; z-index: 0; }
+
+    /* Layout + card */
+    .page { min-height: calc(var(--vh) * 100); display: flex; flex-direction: column; }
+    .hero { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+    .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(var(--blur,10px)); padding: 22px; width: min(92vw, 860px); text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
+    h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: .4px; }
+    .lead { color: var(--muted,#95a3b8); margin: 0 0 18px; }
+
+    /* Capsule buttons (grid size tabs) */
+    #tab { margin: 8px auto 18px; padding-bottom: 6px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; border-bottom: 1px solid #223042; }
+    #tab button { cursor:pointer; border:1px solid #1e2733; background:#0f151d; color:#f5f7fb; padding:10px 14px; border-radius:999px; font-size:15px; font-weight:500; transition: background-color .15s ease, border-color .15s ease, filter .15s ease; }
+    #tab button:hover { border-color:#2a3545; background:#131b26; }
+    #tab button.active { background: var(--accent); border-color: var(--accent); color:#fff; }
+
+    /* Game area */
+    #GameGrid { width: 100%; display:flex; justify-content:center; }
+    td { color: var(--text); background-color: rgba(10,14,20,0.45); font-size: 40px; text-align:center; border:1px solid #1f2a38; border-radius: 12px; font-weight:700; }
+    .newCell { color: var(--accent,#2e8cff); }
+
+    .toolbar { display:flex; justify-content:center; gap:10px; margin-bottom: 12px; }
+    .btn { cursor:pointer; border:1px solid #1e2733; background:#0f151d; color:#f5f7fb; padding:10px 14px; border-radius:999px; font-size:15px; font-weight:500; transition: background-color .15s ease, border-color .15s ease, filter .15s ease; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
+    .btn:hover { border-color:#2a3545; background:#131b26; text-decoration:none; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color:#fff; }
+
+    @media (max-width: 600px){
+      .card{ padding: 28px 18px; }
+      h1{ font-size: 28px; margin: 8px 0 10px; }
+      .lead{ margin: 0 0 22px; line-height: 1.5; }
+      .btn{ padding: 12px 16px; font-size: 15px; gap: 8px; }
+    }
+  </style>
+</head>
+<body onkeydown="keyTrigger(event)">
+  <canvas id="constellation"></canvas>
+  <div class="page">
+    <section class="hero">
+      <div class="card">
+        <h1>2048</h1>
+        <p class="lead">Dark-first, glassy aesthetic with capsule controls.</p>
+
+        <div class="toolbar">
+          <button class="btn" onclick="location.reload()"><span class="material-icons-outlined">refresh</span><span>New Game</span></button>
+        </div>
+
+        <div id="tab"></div>
+        <div id="GameGrid" align="center"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Mobile viewport fix
+    function setVh(){ document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
+    setVh(); window.addEventListener('resize', setVh); window.addEventListener('orientationchange', setVh);
+  </script>
+  <script src="assets/constellation.js"></script>
+
+  <!-- Inline game scripts (original project) -->
+  <script>
+  // Touch.js
+  function detectswipe(el, func) {
+    swipe_det = new Object();
+    swipe_det.sX = 0; swipe_det.sY = 0; swipe_det.eX = 0; swipe_det.eY = 0;
+    var min_x = 30, max_x = 30, min_y = 50, max_y = 60; var direc = "";
+    ele = document.getElementById(el);
+    ele.addEventListener("touchstart", function(e){ var t = e.touches[0]; swipe_det.sX = t.screenX; swipe_det.sY = t.screenY; }, false);
+    ele.addEventListener("touchmove", function(e){ e.preventDefault(); var t = e.touches[0]; swipe_det.eX = t.screenX; swipe_det.eY = t.screenY; }, false);
+    ele.addEventListener("touchend", function(e){
+      if (((swipe_det.eX - min_x > swipe_det.sX) || (swipe_det.eX + min_x < swipe_det.sX)) && swipe_det.eY < swipe_det.sY + max_y && swipe_det.sY > swipe_det.eY - max_y && swipe_det.eX > 0) { direc = (swipe_det.eX > swipe_det.sX) ? "r" : "l"; }
+      else if (((swipe_det.eY - min_y > swipe_det.sY) || (swipe_det.eY + min_y < swipe_det.sY)) && swipe_det.eX < swipe_det.sX + max_x && swipe_det.sX > swipe_det.eX - max_x && swipe_det.eY > 0) { direc = (swipe_det.eY > swipe_det.sY) ? "d" : "u"; }
+      if (direc != "") { if (typeof func == "function") func(el, direc); }
+      direc = ""; swipe_det.sX = swipe_det.sY = swipe_det.eX = swipe_det.eY = 0; }, false);
+  }
+  </script>
+  <script>
+  // Logic.js
+  class Logic {
+      constructor(size) {
+          this.size = size; this.grid = []; this.freeIndex = Array.from(Array(size * size).keys());
+          for (let x = 0; x < size; x++) { let subArray = []; for (let y = 0; y < size; y++) { subArray.push(0); } this.grid.push(subArray); }
+          this.addValueInGrid(); this.addValueInGrid();
+      }
+      getRandomNumberInRange(min, max) { ++max; return Math.floor(Math.random() * (+max - +min)) + +min; }
+      getFreeIndexCount() { return this.freeIndex.length; }
+      getNewValueIndex() { return this.newValueIndex; }
+      getFreeIndexRandom() { let randomIndex = this.getRandomNumberInRange(0, this.getFreeIndexCount() - 1); let freeIndexValue = this.freeIndex[randomIndex]; this.newValueIndex = freeIndexValue; this.freeIndex.splice(randomIndex, 1); return freeIndexValue; }
+      getRandomNumber2and4() { if (this.getRandomNumberInRange(1, 100) == 1) return 4; return 2; }
+      addValueInGrid(value = this.getRandomNumber2and4()) { let freeIndexValue = this.getFreeIndexRandom(); let xCord = Math.floor(freeIndexValue / this.size); let yCord = freeIndexValue % this.size; this.grid[xCord][yCord] = value; return this.grid; }
+  }
+  class Action extends Logic {
+      constructor(size, winningValue, winningTrigger, lossTrigger) { super(size); this.winningValue = winningValue; this.winningTrigger = winningTrigger; this.lossTrigger = lossTrigger; this.check = true; }
+      moveLeft(){ return this.gravity(false,false); }
+      moveRight(){ return this.gravity(true,false); }
+      moveDown(){ return this.gravity(true,true); }
+      moveUp(){ return this.gravity(false,true); }
+      getCopyOfArray(array){ return array.map(function (arr){ return arr.slice(); }); }
+      gravity(antiGravity, metaGravity){ this.freeIndex = []; let sequence = []; for (let x = 0; x < this.size; ++x){ let values = []; for (let y = 0; y < this.size; ++y){ let X=x,Y=y; if (metaGravity){ let temp=x; X=y; Y=temp;} if (this.grid[X][Y] != 0) values.push(this.grid[X][Y]); }
+        if (antiGravity) values.reverse(); values = this.mergeSequence(values); for (let y = this.size - values.length; y > 0; --y) values.push(0); if (antiGravity) values.reverse();
+        for (let y = 0; y < this.size; ++y){ let X=x,Y=y; if (metaGravity){ let temp=x; X=y; Y=temp; } this.grid[X][Y] = values[y]; if (this.grid[X][Y] == 0) this.freeIndex.push(X * this.size + Y); }
+        sequence.push(this.getCopyOfArray(this.grid)); }
+        if (this.getFreeIndexCount() > 0) this.addValueInGrid(); if (this.check) this.checkForLost(); sequence.push(this.getCopyOfArray(this.grid)); return sequence; }
+      checkForLost(){ if (this.getFreeIndexCount() != 0) return; this.check = false; let gridCopy = this.getCopyOfArray(this.grid); this.moveDown(); this.moveUp(); this.moveLeft(); this.moveRight(); this.check = true; let validation = true; for (let x = 0; x < this.size; x++){ for (let y = 0; y < this.size; y++){ if (this.grid[x][y] == gridCopy[x][y]) { validation = validation && true; } else { validation = validation && false; } } } if (validation) this.lossTrigger(); else this.grid = gridCopy; }
+      mergeSequence(values){ for (let iter = 0; iter < values.length; ++iter){ if (iter + 1 < values.length && values[iter] === values[iter + 1]){ values[iter] = values[iter] * 2; values.splice(iter + 1, 1); if (values[iter] == this.winningValue) this.winningTrigger(); } } return values; }
+      getGrid(){ return this.grid; }
+  }
+  </script>
+  <script>
+  // GridMapping.js
+  let settings = { gridSettings: { maxGridCount: 8, minGridCount: 4 }, gameSetting: { winningValue: 2048 } };
+  function detectMobile(){ return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i).test(navigator.userAgent); }
+  function reloadCss(){ var links = document.getElementsByTagName("link"); for (var cl in links){ var link = links[cl]; if (link && link.rel === "stylesheet") link.href += ""; } }
+  function createGrid(size){ let table = document.createElement("TABLE"); for (let x = 0; x < size; x++){ maxExpansion = window.innerWidth < (window.innerHeight - 200) ? window.innerWidth : window.innerHeight - 200; let gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size; if(detectMobile()) gridWidth = (window.innerWidth-50) / size; let tr = document.createElement("TR"); for (let y = 0; y < size; y++){ let td = document.createElement("TD"); let textNode = document.createTextNode("0"); td.appendChild(textNode); td.style.width = gridWidth; td.style.height = gridWidth; td.style.fontSize = 30; if(detectMobile()) td.style.fontSize = 70; tr.appendChild(td);} table.appendChild(tr); table.id = "grid"; } return table; }
+  let tableDic = {}; function createTables(){ for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ tableDic[x] = createGrid(x); } }
+  function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+  let table; function renderTable(grid){ let ind = action.newValueIndex; let xCord = Math.floor(ind / action.size); let yCord = ind % action.size; for (let x = 0; x < grid.length; x++){ for (let y = 0; y < grid.length; y++){ if(grid[x][y] != 0) table.rows[x].cells[y].innerHTML = grid[x][y]; else table.rows[x].cells[y].innerHTML = " "; if (xCord == x && yCord == y) table.rows[x].cells[y].classList.add("newCell"); else table.rows[x].cells[y].classList.remove("newCell"); } } }
+  function renderAnimation(grids){ grids.forEach(grid => { sleep(500); renderTable(grid); }); }
+  let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = tableDic[evt.currentTarget.id]; GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
+    button.appendChild(document.createTextNode(`${x}x${x}`)); parent.appendChild(button); } }
+  function keyTrigger(evt){ let keyCode = evt.keyCode; if (keyCode == 38) renderAnimation(action.moveUp()); else if (keyCode == 40) renderAnimation(action.moveDown()); else if (keyCode == 37) renderAnimation(action.moveLeft()); else if (keyCode == 39) renderAnimation(action.moveRight()); }
+  function touchAction(el, type){ if (type == "u") renderAnimation(action.moveUp()); else if (type == "d") renderAnimation(action.moveDown()); else if (type == "l") renderAnimation(action.moveLeft()); else if (type == "r") renderAnimation(action.moveRight()); }
+  detectswipe("GameGrid",touchAction); createTables(); createTabs();
+  </script>
+</body>
+</html>
+

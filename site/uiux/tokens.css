@@ -1,0 +1,7 @@
+:root {
+  --bg:#0b0f14; --panel:#121821; --text:#e6eef8; --muted:#95a3b8;
+  --accent:#2e8cff; --danger:#ff4d4f; --success:#29c26a;
+  --pink:#f9a8d4; --line:#1f2a3833; --radius:16px; --blur:10px;
+}
+@media (prefers-color-scheme: light){:root{--bg:#f7f9ff;--panel:#fff;--text:#0a0a0a;--muted:#52525b;--accent:#4f46e5;--pink:#d946ef;--line:#4f6b8a33}}
+
