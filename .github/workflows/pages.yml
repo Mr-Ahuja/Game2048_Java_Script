@@ -4,8 +4,8 @@ on:
   push:
     branches: [ master ]
     paths:
-      - "Game2048_Java_Script/site/**"
-      - "Game2048_Java_Script/.github/workflows/pages.yml"
+      - "site/**"
+      - ".github/workflows/pages.yml"
 
 permissions:
   contents: read
@@ -22,7 +22,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "Game2048_Java_Script/site"
+          path: "site"
   deploy:
     environment:
       name: github-pages
