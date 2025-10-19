@@ -21,7 +21,7 @@
     /* Layout + card */
     .page { min-height: calc(var(--vh) * 100); display: flex; flex-direction: column; }
     .hero { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-    .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(var(--blur,10px)); padding: 22px; width: min(92vw, 860px); text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
+    .card { background: rgba(10,14,20,0.35); color: var(--text); border: 1px solid #223042; border-radius: var(--radius,16px); backdrop-filter: blur(2px); padding: 22px; width: min(92vw, 860px); text-align: center; box-shadow: 0 12px 48px rgba(0,0,0,.38); }
     h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: .4px; }
     .lead { color: var(--muted,#95a3b8); margin: 0 0 18px; }
 
@@ -33,8 +33,11 @@
 
     /* Game area */
     #GameGrid { width: 100%; display:flex; justify-content:center; }
-    td { color: var(--text); background-color: rgba(10,14,20,0.45); font-size: 40px; text-align:center; border:1px solid #1f2a38; border-radius: 12px; font-weight:700; }
+    table#grid { border-collapse: separate; border-spacing: 8px; }
+    td { color: var(--text); background-color: rgba(10,14,20,0.45); font-size: 40px; text-align:center; border:1px solid #1f2a38; border-radius: 12px; font-weight:700; transition: transform .12s ease, background-color .12s ease, color .12s ease; }
     .newCell { color: var(--accent,#2e8cff); }
+    .bump { animation: bump .14s ease; }
+    @keyframes bump { 0%{ transform: scale(.92); } 100%{ transform: scale(1); } }
 
     .toolbar { display:flex; justify-content:center; gap:10px; margin-bottom: 12px; }
     .btn { cursor:pointer; border:1px solid #1e2733; background:#0f151d; color:#f5f7fb; padding:10px 14px; border-radius:999px; font-size:15px; font-weight:500; transition: background-color .15s ease, border-color .15s ease, filter .15s ease; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
@@ -65,6 +68,7 @@
         <div id="GameGrid" align="center"></div>
       </div>
     </section>
+    <footer class="site-footer">Game 2048 by The Chosen One - <a href="https://preetam.thechosenone.in/" target="_blank" rel="noopener">Preetam Ahuja</a></footer>
   </div>
 
   <script>
@@ -128,11 +132,48 @@
   let settings = { gridSettings: { maxGridCount: 8, minGridCount: 4 }, gameSetting: { winningValue: 2048 } };
   function detectMobile(){ return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i).test(navigator.userAgent); }
   function reloadCss(){ var links = document.getElementsByTagName("link"); for (var cl in links){ var link = links[cl]; if (link && link.rel === "stylesheet") link.href += ""; } }
-  function createGrid(size){ let table = document.createElement("TABLE"); for (let x = 0; x < size; x++){ maxExpansion = window.innerWidth < (window.innerHeight - 200) ? window.innerWidth : window.innerHeight - 200; let gridWidth = 100 < maxExpansion / size ? 100 : maxExpansion / size; if(detectMobile()) gridWidth = (window.innerWidth-50) / size; let tr = document.createElement("TR"); for (let y = 0; y < size; y++){ let td = document.createElement("TD"); let textNode = document.createTextNode("0"); td.appendChild(textNode); td.style.width = gridWidth; td.style.height = gridWidth; td.style.fontSize = 30; if(detectMobile()) td.style.fontSize = 70; tr.appendChild(td);} table.appendChild(tr); table.id = "grid"; } return table; }
+  function createGrid(size){
+    let table = document.createElement("TABLE");
+    table.id = "grid";
+    for (let x = 0; x < size; x++){
+      const maxExpansion = Math.min(window.innerWidth, window.innerHeight - 200);
+      let cell = Math.min(100, Math.floor(maxExpansion / size));
+      if (detectMobile()) cell = Math.floor((window.innerWidth - 50) / size);
+      let tr = document.createElement("TR");
+      for (let y = 0; y < size; y++){
+        let td = document.createElement("TD");
+        td.appendChild(document.createTextNode("0"));
+        td.style.width = cell + 'px';
+        td.style.height = cell + 'px';
+        td.style.fontSize = (detectMobile() ? 22 : 18) + 'px';
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+    return table;
+  }
   let tableDic = {}; function createTables(){ for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ tableDic[x] = createGrid(x); } }
   function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
-  let table; function renderTable(grid){ let ind = action.newValueIndex; let xCord = Math.floor(ind / action.size); let yCord = ind % action.size; for (let x = 0; x < grid.length; x++){ for (let y = 0; y < grid.length; y++){ if(grid[x][y] != 0) table.rows[x].cells[y].innerHTML = grid[x][y]; else table.rows[x].cells[y].innerHTML = " "; if (xCord == x && yCord == y) table.rows[x].cells[y].classList.add("newCell"); else table.rows[x].cells[y].classList.remove("newCell"); } } }
-  function renderAnimation(grids){ grids.forEach(grid => { sleep(500); renderTable(grid); }); }
+  let table; let lastGrid = null;
+  function renderTable(grid){
+    let ind = action.newValueIndex; let xCord = Math.floor(ind / action.size); let yCord = ind % action.size;
+    for (let x = 0; x < grid.length; x++){
+      for (let y = 0; y < grid.length; y++){
+        const cell = table.rows[x].cells[y];
+        const prev = lastGrid ? lastGrid[x][y] : null;
+        if(grid[x][y] != 0) cell.textContent = grid[x][y]; else cell.textContent = "";
+        if (xCord == x && yCord == y) cell.classList.add("newCell"); else cell.classList.remove("newCell");
+        if (prev !== null && prev !== grid[x][y]){ cell.classList.remove('bump'); void cell.offsetWidth; cell.classList.add('bump'); }
+      }
+    }
+    lastGrid = grid.map(r => r.slice());
+  }
+  async function renderAnimation(grids){
+    for (const g of grids){
+      renderTable(g);
+      await sleep(110);
+    }
+  }
   let action; function createTabs(){ let parent = document.getElementById("tab"); for (let x = settings.gridSettings.minGridCount; x <= settings.gridSettings.maxGridCount; ++x){ let button = document.createElement("BUTTON"); button.id = x; button.className = "tablinks btn"; button.style.fontSize = detectMobile()? 18 : 15; button.onclick = function (evt){ let GameGrid = document.getElementById("GameGrid"); if (GameGrid.hasChildNodes()) GameGrid.removeChild(document.getElementById("grid")); table = tableDic[evt.currentTarget.id]; GameGrid.appendChild(table); action = new Action(evt.currentTarget.id, settings.gameSetting.winningValue, function(){ alert("You Won"); }, function(){ alert("You Lost"); }); renderTable(action.grid); reloadCss(); Array.from(parent.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); evt.currentTarget.classList.add('active'); };
     button.appendChild(document.createTextNode(`${x}x${x}`)); parent.appendChild(button); } }
   function keyTrigger(evt){ let keyCode = evt.keyCode; if (keyCode == 38) renderAnimation(action.moveUp()); else if (keyCode == 40) renderAnimation(action.moveDown()); else if (keyCode == 37) renderAnimation(action.moveLeft()); else if (keyCode == 39) renderAnimation(action.moveRight()); }
@@ -141,4 +182,3 @@
   </script>
 </body>
 </html>
-
